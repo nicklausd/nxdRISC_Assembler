@@ -45,6 +45,7 @@ namespace nxdRISC521_Assembler
                 // We can worry about code sections later, and we can worry about other
                 // instruction types later. As long as manipulation instructions are
                 // able to be parsed and assembled properly, we are good.
+                if (tLine == null) continue;
                 Token op = tLine[0];
                 if(op.Type == TokenType.OpCode)
                 {

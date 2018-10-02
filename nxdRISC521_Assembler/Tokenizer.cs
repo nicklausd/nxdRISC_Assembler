@@ -51,8 +51,9 @@ namespace nxdRISC521_Assembler
             bool containsComment = false;
             if (strippedLine.Contains(';'))
             {
-                int semicIndex = -1;
-                containsComment = false;
+                // We'll worry about string handling a different time
+                /*int semicIndex = -1;
+                containsComment = true;
                 do
                 {
                     semicIndex = strippedLine.IndexOf(';', semicIndex + 1);
@@ -74,12 +75,11 @@ namespace nxdRISC521_Assembler
                             }
                         }
                     }
-                } while (semicIndex >= 0 || !containsComment);
+                } while (semicIndex >= 0 || !containsComment);*/
 
-                if (containsComment)
-                {
-                    strippedLine = strippedLine.Substring(0, semicIndex);
-                }
+                int semicIndex = strippedLine.IndexOf(';');
+
+                strippedLine = strippedLine.Substring(0, semicIndex);
             }
 
             // Now that we've stripped out comments, we'll strip out strings
@@ -105,17 +105,19 @@ namespace nxdRISC521_Assembler
             }
 
             // First, we'll split the line by spaces to get raw token data
-            string[] splitLine = line.Split(' ');
+            string[] splitLine = strippedLine.Split(' ');
+
+            if (strippedLine.Length == 0 || splitLine.Length == 0)
+                return null;
 
             Regex registerRegex = new Regex("(r|R)[0-9]+");
 
             // Go through each potential raw token
-            int i = 0;
             foreach(string raw in splitLine)
             {
-                i++; // We'll increment first since we're never indexing using
-                     // this variable, it only refers to line numbers
                 string rawStripped = raw.Trim();
+
+                if (rawStripped.Length == 0) continue;
 
                 // Now that we've stripped any extra potential whitespace and
                 // removed comments, proceed to determine token types.
@@ -216,7 +218,7 @@ namespace nxdRISC521_Assembler
                             + "between 0x0000 and 0x3FFF.", rawStripped);
                     }
                 }
-                else if (rawStripped.ToLower().Substring(0, 2) == "0x")
+                else if (rawStripped.Length > 2 && rawStripped.ToLower().Substring(0, 2) == "0x")
                 {
                     string hexString = rawStripped.ToLower().Substring(2);
                     if (int.TryParse(hexString, System.Globalization.NumberStyles.HexNumber, NumberFormatInfo.InvariantInfo, out outNum))
@@ -252,7 +254,7 @@ namespace nxdRISC521_Assembler
                 // For now, we'll leave other token types out and implement them as needed.
             }
 
-            return null;
+            return tokenList;
         }
     }
 
