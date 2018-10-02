@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Globalization;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace nxdRISC521_Assembler
@@ -10,19 +12,18 @@ namespace nxdRISC521_Assembler
     {
         SectionLabel,
         AsmDirective,
-        JmpLabel,
+        Label,
         OpCode,
         RegName,
         Constant,
-        ConstLabel,
         ConstType,
         String,
     }
 
     public class Token
     {
-        string Value { get; }
-        TokenType Type { get; }
+        public string Value { get; }
+        public TokenType Type { get; }
 
         public Token(string value, TokenType type)
         {
@@ -41,6 +42,9 @@ namespace nxdRISC521_Assembler
         public static List<Token> TokenizeLine(string line)
         {
             string strippedLine = line.Trim(); // Strip of unneeded whitespace
+            // Let's also remove any commas from the token, since they denote
+            // a separation between operands and aren't needed
+            strippedLine = strippedLine.Replace(',', ' ').Trim();
             List<Token> tokenList = new List<Token>();
 
             // Before splitting the line into tokens, strip out comments
@@ -80,11 +84,30 @@ namespace nxdRISC521_Assembler
 
             // Now that we've stripped out comments, we'll strip out strings
             // and create an array that will get tokenized in as we loop through.
+            // We'll replace all instances of a string with $x$ where x is the
+            // index in the strings list of the string, and then during tokenization
+            // we'll check those values and throw the string back in as a token.
 
-            //if(strippedLine.Contains)
+            Regex strRegex = new Regex("\\$[0-9]+\\$");
+            List<string> tokenStrings = new List<string>();
+
+            while(strippedLine.Contains('"'))
+            {
+                int quoteIndex = strippedLine.IndexOf('"');
+                if(strippedLine.Substring(quoteIndex + 1).Contains('"'))
+                {
+                    int endQuoteIndex = strippedLine.Substring(quoteIndex + 1).IndexOf('"');
+                    string tokenString = strippedLine.Substring(quoteIndex + 1, endQuoteIndex - quoteIndex - 1);
+                    tokenStrings.Add(tokenString);
+                    strippedLine = strippedLine.Remove(quoteIndex, 1 + endQuoteIndex - quoteIndex);
+                    strippedLine.Insert(quoteIndex, $"${tokenStrings.Count - 1}$");
+                }
+            }
 
             // First, we'll split the line by spaces to get raw token data
             string[] splitLine = line.Split(' ');
+
+            Regex registerRegex = new Regex("(r|R)[0-9]+");
 
             // Go through each potential raw token
             int i = 0;
@@ -93,38 +116,28 @@ namespace nxdRISC521_Assembler
                 i++; // We'll increment first since we're never indexing using
                      // this variable, it only refers to line numbers
                 string rawStripped = raw.Trim();
-                //bool containsComment = false;
-                // Check if our potential token might include comments
-                if(rawStripped.Contains(';'))
-                {
-                    int semicIndex = rawStripped.IndexOf(';');
-                    containsComment = true;
-                    // Since we allow string tokens, we need to check if there
-                    // are quotation marks surrounding our semicolon to not
-                    // accidentally break strings containing semicolons.
-                    if(rawStripped.Contains('"'))
-                    {
-                        int quoteIndex = rawStripped.IndexOf('"');
-                        if(rawStripped.Substring(quoteIndex+1).Contains('"'))
-                        {
-                            int endQuoteIndex = rawStripped.Substring(quoteIndex + 1).IndexOf('"') + quoteIndex + 1;
-                            if(semicIndex > quoteIndex && semicIndex < endQuoteIndex)
-                            {
-                                // Semicolon contained within string, not a comment
-                                // to be cut out.
-                                containsComment = false;
-                            }
-                        }
-                    }
-                    
-                    if(containsComment)
-                    {
-                        rawStripped = rawStripped.Substring(0, semicIndex);
-                    }
-                }
 
                 // Now that we've stripped any extra potential whitespace and
                 // removed comments, proceed to determine token types.
+
+                // Before any other types are removed, we want to check for our
+                // strings that we pulled out earlier.
+
+                if(strRegex.IsMatch(rawStripped))
+                {
+                    string indexStr = rawStripped.Replace('$', ' ').Trim();
+                    int index = 0;
+                    if(int.TryParse(indexStr, out index))
+                    {
+                        tokenList.Add(new Token(tokenStrings[index], TokenType.String));
+                        continue;
+                    }
+                    else
+                    {
+                        throw new TokenizerException("Token contains invalid character: '$'.", rawStripped);
+                    }
+                }
+
                 // First token type we'll look for is section labels.
 
                 List<string> sectLabels = new List<string>()
@@ -203,9 +216,40 @@ namespace nxdRISC521_Assembler
                             + "between 0x0000 and 0x3FFF.", rawStripped);
                     }
                 }
+                else if (rawStripped.ToLower().Substring(0, 2) == "0x")
+                {
+                    string hexString = rawStripped.ToLower().Substring(2);
+                    if (int.TryParse(hexString, System.Globalization.NumberStyles.HexNumber, NumberFormatInfo.InvariantInfo, out outNum))
+                    {
+                        if (outNum - 0x3FFF <= 0)
+                        {
+                            tokenList.Add(new Token(outNum.ToString(), TokenType.Constant));
+                            continue;
+                        }
+                        else
+                        {
+                            // Constant is out of bounds - raise an error
+                            throw new TokenizerException("Constant number is out of bounds. Constant "
+                                + "numbers are constrained to a 14-bit word and must be a value "
+                                + "between 0x0000 and 0x3FFF.", rawStripped);
+                        }
+                    }
+                    else
+                    {
+                        throw new TokenizerException("Invalid constant hex value. Hex values may only "
+                            + "contain digits of 0-9 and A-F.", rawStripped);
+                    }
+                }
 
+                Match registerMatch = registerRegex.Match(rawStripped);
+                // Check if token is a register reference
+                if(registerMatch.Success)
+                {
+                    tokenList.Add(new Token(registerMatch.Value, TokenType.RegName));
+                    continue;
+                }
 
-                
+                // For now, we'll leave other token types out and implement them as needed.
             }
 
             return null;
