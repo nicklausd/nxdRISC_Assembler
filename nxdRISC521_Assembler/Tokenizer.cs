@@ -87,6 +87,8 @@ namespace nxdRISC521_Assembler
             // We'll replace all instances of a string with $x$ where x is the
             // index in the strings list of the string, and then during tokenization
             // we'll check those values and throw the string back in as a token.
+            // Stripping out strings is untested and ultimately unneeded for the class
+            // but is a worthwhile extension to make for a fun side project.
 
             Regex strRegex = new Regex("\\$[0-9]+\\$");
             List<string> tokenStrings = new List<string>();
