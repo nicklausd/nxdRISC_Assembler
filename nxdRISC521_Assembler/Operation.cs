@@ -95,31 +95,54 @@ namespace nxdRISC521_Assembler
         }
     }
 
+    // MemoryOperation is for LD and ST only; IN, OUT, CPY, and SWAP all
+    // follow the same format as ManipulationOperation and will be handled
+    // through that class instead.
     class MemoryOperation : Operation
     {
-        public MemoryOperation(int ri, int rj, Opcodes name) : base(ri, rj, name)
-        {
+        public int MemoryOffset { get; }
 
+        public MemoryOperation(int ri, int rj, int offset, Opcodes name) : base(ri, rj, name)
+        {
+            if (offset > WORD_MAX)
+                throw new ArgumentOutOfRangeException("MemoryOffset", "Memory offset greater than maximum word size.");
+            MemoryOffset = offset;
         }
 
         public override int[] GetBinary()
         {
+            int iw0 = 0; int iw1 = 0;
+            iw0 ^= (int)Name << 10;
+            iw0 ^= (Ri & R_VAL_MAX) << 5;
+            iw0 ^= (Rj & R_VAL_MAX);
+            iw1 ^= (MemoryOffset & WORD_MAX);
 
-
-            throw new NotImplementedException();
+            return new int[2] { iw0, iw1 };
         }
     }
 
     class JumpOperation : Operation
     {
-        public JumpOperation(int ri, int rj) : base(ri, rj, Opcodes.JMP)
-        {
+        public JumpTypes Condition { get; }
+        public int MemoryOffset { get; }
 
+        public JumpOperation(int ri, int offset, JumpTypes cond) : base(ri, 0, Opcodes.JMP)
+        {
+            if (offset > WORD_MAX)
+                throw new ArgumentOutOfRangeException("MemoryOffset", "Memory offset greater than maximum word size.");
+            Condition = cond;
+            MemoryOffset = offset;
         }
 
         public override int[] GetBinary()
         {
-            throw new NotImplementedException();
+            int iw0 = 0; int iw1 = 0;
+            iw0 ^= (int)Name << 10;
+            iw0 ^= (Ri * R_VAL_MAX) << 5;
+            iw0 ^= (int)Condition << 1;
+            iw1 ^= (MemoryOffset & WORD_MAX);
+
+            return new int[2] { iw0, iw1 };
         }
     }
 }
