@@ -88,18 +88,23 @@ namespace nxdRISC521_Assembler
             foreach(Operation op in parsedOps)
             {
                 int[] iws = op.GetBinary(); // Get the instruction words of the operation
+                Console.Write("Successfully parsed " + op.Name.ToString() + " Ri=" +
+                    op.Ri.ToString() + " Rj=" + op.Rj.ToString() + " to hex value: ");
                 foreach(int iw in iws)
                 {
+                    Console.Write(iw.ToString("X4"));
                     string dataLine = addr.ToString("X4") + " : " + iw.ToString("X4") + ";";
                     mifOutput.AppendLine(dataLine);
                     addr++;
                 }
+                Console.WriteLine();
             }
 
             mifOutput.AppendLine("END;");
 
             File.WriteAllText(fName.Substring(0, fName.Length - 4) + ".mif", mifOutput.ToString());
 
+            Console.WriteLine("Press any key to continue...");
             Console.ReadLine();
         }
     }
