@@ -10,14 +10,14 @@ namespace nxdRISC521_Assembler
 {
     public enum TokenType
     {
-        SectionLabel,
-        AsmDirective,
-        Label,
-        OpCode,
-        RegName,
-        Constant,
-        ConstType,
-        String,
+        SectionLabel = 0b00000001,
+        AsmDirective = 0b00000010,
+        Label = 0b00000100,
+        OpCode = 0b00001000,
+        RegName = 0b00010000,
+        Constant = 0b00100000,
+        ConstType = 0b01000000,
+        String = 0b10000000,
     }
 
     public class Token
@@ -249,7 +249,7 @@ namespace nxdRISC521_Assembler
                 // Check if token is a register reference
                 if(registerMatch.Success)
                 {
-                    tokenList.Add(new Token(registerMatch.Value, TokenType.RegName));
+                    tokenList.Add(new Token(registerMatch.Value.Substring(1), TokenType.RegName));
                     continue;
                 }
 

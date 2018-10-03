@@ -43,6 +43,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="MnemonicFormat.cs" />
     <Compile Include="Operation.cs" />
     <Compile Include="Parser.cs" />
     <Compile Include="Program.cs" />

@@ -55,7 +55,7 @@ namespace nxdRISC521_Assembler
                         // the token is a register
                         if(tLine.Count == 2 && tLine[1].Type == TokenType.RegName)
                         {
-                            parsedOps.Add(new ManipulationOperation(int.Parse(tLine[1].Value.Substring(1)), 0, Opcodes.NOT));
+                            parsedOps.Add(new ManipulationOperation(int.Parse(tLine[1].Value), 0, Opcodes.NOT));
                         }
                     }
                     else if(op.Value == "add" || op.Value == "sub" || op.Value == "and" || op.Value == "or")
@@ -63,14 +63,14 @@ namespace nxdRISC521_Assembler
                         // Two-operand ops where both operands are registers
                         if(tLine.Count == 3 && tLine[1].Type == TokenType.RegName && tLine[2].Type == TokenType.RegName)
                         {
-                            parsedOps.Add(new ManipulationOperation(int.Parse(tLine[1].Value.Substring(1)), int.Parse(tLine[2].Value.Substring(1)), opcodeDict[op.Value]));
+                            parsedOps.Add(new ManipulationOperation(int.Parse(tLine[1].Value), int.Parse(tLine[2].Value), opcodeDict[op.Value]));
                         }
                     }
                     else if(op.Value == "addc" || op.Value == "subc" || op.Value == "shra" || op.Value == "rotr")
                     {
                         if (tLine.Count == 3 && tLine[1].Type == TokenType.RegName && tLine[2].Type == TokenType.Constant)
                         {
-                            parsedOps.Add(new ManipulationOperation(int.Parse(tLine[1].Value.Substring(1)), int.Parse(tLine[2].Value), opcodeDict[op.Value]));
+                            parsedOps.Add(new ManipulationOperation(int.Parse(tLine[1].Value), int.Parse(tLine[2].Value), opcodeDict[op.Value]));
                         }
                     }
                 }

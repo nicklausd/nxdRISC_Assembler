@@ -13,6 +13,15 @@ namespace nxdRISC521_Assembler
             Dir, Consts, Code, None
         }
 
+        private Dictionary<string, MnemonicFormat> mnemonicFormat = new Dictionary<string, MnemonicFormat>()
+        {
+            { "add", new MnemonicFormat(2, new TokenType[]{ TokenType.RegName, TokenType.RegName | TokenType.Label }) },
+            { "addc", new MnemonicFormat(2, new TokenType[]{ TokenType.RegName, TokenType.Constant }) },
+            { "sub", new MnemonicFormat(2, new TokenType[]{ TokenType.RegName, TokenType.RegName }) },
+            { "subc", new MnemonicFormat(2, new TokenType[]{ TokenType.RegName, TokenType.Constant | TokenType.Label }) },
+
+        };
+
         private List<List<Token>> tokenStream;
 
         private List<List<Token>> directives; // Tokens in the .directives section
@@ -155,6 +164,27 @@ namespace nxdRISC521_Assembler
             foreach(List<Token> line in code)
             {
                 Token op = line[0];
+                if(op.Type == TokenType.OpCode)
+                {
+                    if(mnemonicFormat.ContainsKey(op.Value))
+                    {
+                        MnemonicFormat instrFormat = mnemonicFormat[op.Value];
+                        // Check if the number of operands is correct, remembering to
+                        // account for the fact that the first token in the line was our
+                        // opcode token
+                        if(line.Count == instrFormat.OperandCount + 1)
+                        {
+                            for(int i = 0; i < instrFormat.OperandCount; i++)
+                            {
+                                Token operand = line[i + 1];
+                                if((instrFormat.OperandTypes[i] & operand.Type) == operand.Type)
+                                {
+
+                                }
+                            }
+                        }
+                    }
+                }
             }
 
             throw new NotImplementedException();
