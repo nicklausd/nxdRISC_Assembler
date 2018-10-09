@@ -15,10 +15,10 @@ namespace nxdRISC521_Assembler
 
         private Dictionary<string, MnemonicFormat> mnemonicFormat = new Dictionary<string, MnemonicFormat>()
         {
-            { "add", new MnemonicFormat(2, new TokenType[]{ TokenType.RegName, TokenType.RegName | TokenType.Label }) },
-            { "addc", new MnemonicFormat(2, new TokenType[]{ TokenType.RegName, TokenType.Constant }) },
-            { "sub", new MnemonicFormat(2, new TokenType[]{ TokenType.RegName, TokenType.RegName }) },
-            { "subc", new MnemonicFormat(2, new TokenType[]{ TokenType.RegName, TokenType.Constant | TokenType.Label }) },
+            { "add", new MnemonicFormat(2, 1, new TokenType[]{ TokenType.RegName, TokenType.RegName | TokenType.Label }) },
+            { "addc", new MnemonicFormat(2, 1, new TokenType[]{ TokenType.RegName, TokenType.Constant }) },
+            { "sub", new MnemonicFormat(2, 1, new TokenType[]{ TokenType.RegName, TokenType.RegName }) },
+            { "subc", new MnemonicFormat(2, 1, new TokenType[]{ TokenType.RegName, TokenType.Constant | TokenType.Label }) },
 
         };
 
@@ -30,6 +30,8 @@ namespace nxdRISC521_Assembler
 
         // Dictionary of parsed .equ directives
         private Dictionary<string, string> dirDict = new Dictionary<string, string>();
+        // Locations in memory where labels point to
+        private Dictionary<string, int> labelLocations = new Dictionary<string, int>();
 
         public Parser(List<List<Token>> tokens)
         {
@@ -161,6 +163,8 @@ namespace nxdRISC521_Assembler
 
         private List<Operation> ParseCode()
         {
+            int addr = 0;
+            List<ParsedInstruction> firstPassInstrs = new List<ParsedInstruction>();
             foreach(List<Token> line in code)
             {
                 Token op = line[0];
@@ -174,16 +178,23 @@ namespace nxdRISC521_Assembler
                         // opcode token
                         if(line.Count == instrFormat.OperandCount + 1)
                         {
+                            ParsedInstruction parsedInstr = new ParsedInstruction(op.Value);
                             for(int i = 0; i < instrFormat.OperandCount; i++)
                             {
                                 Token operand = line[i + 1];
                                 if((instrFormat.OperandTypes[i] & operand.Type) == operand.Type)
                                 {
-
+                                    Operand o = new Operand(operand.Value, EnumConv.TokenToOperandType(operand.Type));
+                                    parsedInstr.Operands.Add(o);
                                 }
                             }
+                            firstPassInstrs.Add(parsedInstr);
                         }
                     }
+                }
+                else if(op.Type == TokenType.Label)
+                {
+                    labelLocations.Add(op.Value, addr);
                 }
             }
 

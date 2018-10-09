@@ -51,32 +51,6 @@ namespace nxdRISC521_Assembler
             bool containsComment = false;
             if (strippedLine.Contains(';'))
             {
-                // We'll worry about string handling a different time
-                /*int semicIndex = -1;
-                containsComment = true;
-                do
-                {
-                    semicIndex = strippedLine.IndexOf(';', semicIndex + 1);
-                    if (strippedLine.Contains('"'))
-                    {
-                        int quoteIndex = strippedLine.IndexOf('"');
-                        if (strippedLine.Substring(quoteIndex + 1).Contains('"'))
-                        {
-                            int endQuoteIndex = strippedLine.Substring(quoteIndex + 1).IndexOf('"') + quoteIndex + 1;
-                            if (semicIndex > quoteIndex && semicIndex < endQuoteIndex)
-                            {
-                                // Semicolon contained within string, not a comment
-                                // to be cut out.
-                                containsComment = false;
-                            }
-                            else
-                            {
-                                containsComment = true;
-                            }
-                        }
-                    }
-                } while (semicIndex >= 0 || !containsComment);*/
-
                 int semicIndex = strippedLine.IndexOf(';');
 
                 strippedLine = strippedLine.Substring(0, semicIndex);
@@ -147,7 +121,6 @@ namespace nxdRISC521_Assembler
                 List<string> sectLabels = new List<string>()
                 {
                     ".directives", ".enddirectives",
-                    ".constants", ".endconstants",
                     ".code", ".endcode",
                 };
 
@@ -172,8 +145,12 @@ namespace nxdRISC521_Assembler
 
                 // After ASM directives we'll check for constants in the
                 // .constants section.
+                // NOTE: Constants not needed for labs 4 and 5, as my memory organization is
+                // Harvard and we have no instructions to pull data from program memory.
+                // If we could pull from PM, or had von Neumann organization, implementing
+                // the const section would not be an issue.
 
-                List<string> constTypes = new List<string>()
+                /*List<string> constTypes = new List<string>()
                 {
                     ".word", ".char",
                 };
@@ -182,7 +159,7 @@ namespace nxdRISC521_Assembler
                 {
                     tokenList.Add(new Token(rawStripped.ToLower(), TokenType.ConstType));
                     continue;
-                }
+                }*/
 
                 // Look for OpCodes now
 
