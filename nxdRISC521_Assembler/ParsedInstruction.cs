@@ -8,23 +8,76 @@ namespace nxdRISC521_Assembler
 {
     class EnumConv
     {
+        private static Dictionary<string, Opcodes> strToOp = new Dictionary<string, Opcodes>()
+        {
+            { "add", Opcodes.ADD },
+            { "addc", Opcodes.ADDC },
+            { "sub", Opcodes.SUB },
+            { "subc", Opcodes.SUBC },
+            { "and", Opcodes.AND },
+            { "or", Opcodes.OR },
+            { "not", Opcodes.NOT },
+            { "shra", Opcodes.SHRA },
+            { "rotr", Opcodes.ROTR },
+            { "ld", Opcodes.LD },
+            { "st", Opcodes.ST },
+            { "in", Opcodes.IN },
+            { "out", Opcodes.OUT },
+            { "cpy", Opcodes.CPY },
+            { "swap", Opcodes.SWAP },
+            { "jmp", Opcodes.JMP },
+            { "jc", Opcodes.JMP },
+            { "jn", Opcodes.JMP },
+            { "jv", Opcodes.JMP },
+            { "jz", Opcodes.JMP },
+            { "jnc", Opcodes.JMP },
+            { "jnn", Opcodes.JMP },
+            { "jnv", Opcodes.JMP },
+            { "jnz", Opcodes.JMP },
+        };
+
+        private static Dictionary<string, JumpTypes> strToJmp = new Dictionary<string, JumpTypes>()
+        {
+            { "jmp", JumpTypes.JMP },
+            { "jc", JumpTypes.JC },
+            { "jn", JumpTypes.JN },
+            { "jv", JumpTypes.JV },
+            { "jz", JumpTypes.JZ },
+            { "jnc", JumpTypes.JNC },
+            { "jnn", JumpTypes.JNN },
+            { "jnv", JumpTypes.JNV },
+            { "jnz", JumpTypes.JNZ },
+        };
+
         public static OperandType TokenToOperandType(TokenType t)
         {
             switch(t)
             {
                 case TokenType.RegName:
                     return OperandType.Register;
-                    break;
                 case TokenType.Constant:
                     return OperandType.Constant;
-                    break;
                 case TokenType.Label:
                     return OperandType.Label;
-                    break;
                 default:
                     throw new InvalidCastException("Cannot cast TokenType " + t.ToString() + " to OperandType.");
-                    break;
             }
+        }
+
+        public static Opcodes StringToOpcode(string s)
+        {
+            if (strToOp.ContainsKey(s))
+                return strToOp[s];
+            else
+                throw new InvalidCastException("Cannot cast " + s + " to enum Opcodes.");
+        }
+
+        public static JumpTypes StringToJumpType(string s)
+        {
+            if (strToJmp.ContainsKey(s))
+                return strToJmp[s];
+            else
+                throw new InvalidCastException("Cannot cast " + s + " to enum JumpTypes.");
         }
     }
 

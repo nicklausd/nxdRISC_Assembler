@@ -48,6 +48,18 @@ namespace nxdRISC521_Assembler
         protected const int WORD_MAX = 0x3FFF;
         protected const int R_VAL_MAX = 0x1F;
 
+        public static List<Opcodes> ManipOpcodes = new List<Opcodes>()
+        {
+            Opcodes.ADD, Opcodes.ADDC, Opcodes.SUB, Opcodes.SUBC,
+            Opcodes.AND, Opcodes.OR, Opcodes.NOT, Opcodes.SHRA,
+            Opcodes.ROTR, Opcodes.IN, Opcodes.OUT, Opcodes.CPY, Opcodes.SWAP,
+        };
+
+        public static List<Opcodes> MemOpcodes = new List<Opcodes>()
+        {
+            Opcodes.LD, Opcodes.ST,
+        };
+
         /// <summary>
         /// Instantiate a new Operation
         /// </summary>

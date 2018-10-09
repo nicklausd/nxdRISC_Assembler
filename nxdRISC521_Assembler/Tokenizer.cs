@@ -87,6 +87,7 @@ namespace nxdRISC521_Assembler
                 return null;
 
             Regex registerRegex = new Regex("(r|R)[0-9]+");
+            Regex labelRegex = new Regex("[a-zA-Z][a-zA-Z0-9_]*");
 
             // Go through each potential raw token
             foreach(string raw in splitLine)
@@ -167,7 +168,10 @@ namespace nxdRISC521_Assembler
                 {
                     "add", "addc", "sub", "subc",
                     "and", "or", "not", "shra",
-                    "rotr"
+                    "rotr", "in", "out", "ld",
+                    "st", "cpy", "swap", "jmp",
+                    "jc", "jn", "jv", "jz",
+                    "jnc", "jnn", "jnv", "jnz",
                 };
 
                 if(opCodes.Contains(rawStripped.ToLower()))
@@ -222,11 +226,22 @@ namespace nxdRISC521_Assembler
                     }
                 }
 
+                // Check to see if token is a Register
+
                 Match registerMatch = registerRegex.Match(rawStripped);
                 // Check if token is a register reference
                 if(registerMatch.Success)
                 {
                     tokenList.Add(new Token(registerMatch.Value.Substring(1), TokenType.RegName));
+                    continue;
+                }
+
+                // Check if our token is a label
+
+                Match labelMatch = labelRegex.Match(rawStripped);
+                if(labelMatch.Success)
+                {
+                    tokenList.Add(new Token(labelMatch.Value, TokenType.Label));
                     continue;
                 }
 
