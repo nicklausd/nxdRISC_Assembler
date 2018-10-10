@@ -46,7 +46,8 @@ namespace nxdRISC521_Assembler
                 foreach(int iw in iws)
                 {
                     Console.Write(iw.ToString("X4"));
-                    string dataLine = addr.ToString("X4") + " : " + iw.ToString("X4") + ";";
+                    string dataLine = addr.ToString("X4") + " : " + iw.ToString("X4") + "; ";
+                    dataLine += $"% {op.Name.ToString()} Ri={op.Ri.ToString()} Rj={op.Rj.ToString()} %";
                     mifOutput.AppendLine(dataLine);
                     addr++;
                 }
