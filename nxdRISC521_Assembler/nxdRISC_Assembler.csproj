@@ -6,8 +6,8 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{0C1AC8F3-07CA-4C53-B629-CEAA4A78071E}</ProjectGuid>
     <OutputType>Exe</OutputType>
-    <RootNamespace>nxdRISC521_Assembler</RootNamespace>
-    <AssemblyName>nxdRISC521_Assembler</AssemblyName>
+    <RootNamespace>nxdRISC_Assembler</RootNamespace>
+    <AssemblyName>nxdRISC_Assembler</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>

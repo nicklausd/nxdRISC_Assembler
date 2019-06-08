@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace nxdRISC521_Assembler
+namespace nxdRISC_Assembler
 {
     class EnumConv
     {
