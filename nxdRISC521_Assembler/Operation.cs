@@ -8,22 +8,28 @@ namespace nxdRISC521_Assembler
 {
     enum Opcodes
     {
-        ADD = 0b0101,
-        ADDC = 0b0111,
-        SUB = 0b0110,
-        SUBC = 0b1000,
-        AND = 0b1010,
-        OR = 0b1011,
-        NOT = 0b1001,
-        SHRA = 0b1100,
-        ROTR = 0b1101,
-        LD = 0b0000,
-        ST = 0b0001,
-        IN = 0b1110,
-        OUT = 0b1111,
-        CPY = 0b0010,
-        SWAP = 0b0011,
-        JMP = 0b0100,
+        ADD = 0b000000,
+        SUB = 0b000001,
+        ADDC = 0b000010,
+        SUBC = 0b000011,
+        NOT = 0b000100,
+        AND = 0b000101,
+        OR = 0b000110,
+        SHRA = 0b000111,
+        ROTR = 0b001000,
+        LD = 0b001001,
+        ST = 0b001010,
+        IN = 0b001011,
+        OUT = 0b001100,
+        CPY = 0b001101,
+        SWAP = 0b001110,
+        PUSH = 0b001111,
+        POP = 0b010000,
+        JMP = 0b010001,
+        CALL = 0b010010,
+        RET = 0b010011,
+        ANDC = 0b010100,
+        ORC = 0b010101,
     }
 
     enum JumpTypes
@@ -45,7 +51,7 @@ namespace nxdRISC521_Assembler
         public int Rj { get; }
         public Opcodes Name { get; }
 
-        protected const int WORD_MAX = 0x3FFF;
+        protected const int WORD_MAX = 0xFFFF;
         protected const int R_VAL_MAX = 0x1F;
 
         public static List<Opcodes> ManipOpcodes = new List<Opcodes>()
@@ -53,11 +59,22 @@ namespace nxdRISC521_Assembler
             Opcodes.ADD, Opcodes.ADDC, Opcodes.SUB, Opcodes.SUBC,
             Opcodes.AND, Opcodes.OR, Opcodes.NOT, Opcodes.SHRA,
             Opcodes.ROTR, Opcodes.IN, Opcodes.OUT, Opcodes.CPY, Opcodes.SWAP,
+            Opcodes.ANDC, Opcodes.ORC,
         };
 
         public static List<Opcodes> MemOpcodes = new List<Opcodes>()
         {
             Opcodes.LD, Opcodes.ST,
+        };
+
+        public static List<Opcodes> StackOpcodes = new List<Opcodes>()
+        {
+            Opcodes.PUSH, Opcodes.POP,
+        };
+
+        public static List<Opcodes> MethodOpcodes = new List<Opcodes>()
+        {
+            Opcodes.CALL, Opcodes.RET,
         };
 
         /// <summary>
@@ -155,6 +172,47 @@ namespace nxdRISC521_Assembler
             iw1 ^= (MemoryOffset & WORD_MAX);
 
             return new int[2] { iw0, iw1 };
+        }
+    }
+
+    class StackOperation : Operation
+    {
+        public StackOperation(int ri, Opcodes name) : base(ri, 0, name)
+        {
+        }
+
+        public override int[] GetBinary()
+        {
+            int iw0 = 0;
+            iw0 ^= (int)Name << 10;
+            iw0 ^= (Ri & R_VAL_MAX) << 5;
+
+            return new int[1] { iw0 };
+        }
+    }
+
+    class MethodOperation : Operation
+    {
+        int MemoryOffest;
+
+        public MethodOperation(int offset, Opcodes name) : base (0, 0, name)
+        {
+            MemoryOffest = offset & WORD_MAX;
+        }
+
+        public override int[] GetBinary()
+        {
+            int iw0 = (int)Name << 10;
+
+            int[] res = new int[]{ iw0 };
+
+            if(Name == Opcodes.CALL)
+            {
+                res = new int[2];
+                res[0] = iw0; res[1] = MemoryOffest;
+            }
+
+            return res;
         }
     }
 }

@@ -259,3 +259,4 @@ paket-files/
 # Python Tools for Visual Studio (PTVS)
 __pycache__/
 *.pyc
+/nxdRISC521_Assembler/nxdRISC521_Assembler_SOURCE.zip

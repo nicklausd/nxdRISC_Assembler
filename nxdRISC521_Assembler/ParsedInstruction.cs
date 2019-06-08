@@ -34,6 +34,12 @@ namespace nxdRISC521_Assembler
             { "jnn", Opcodes.JMP },
             { "jnv", Opcodes.JMP },
             { "jnz", Opcodes.JMP },
+            { "push", Opcodes.PUSH },
+            { "pop", Opcodes.POP },
+            { "call", Opcodes.CALL },
+            { "ret", Opcodes.RET },
+            { "orc", Opcodes.ORC },
+            { "andc", Opcodes.ANDC },
         };
 
         private static Dictionary<string, JumpTypes> strToJmp = new Dictionary<string, JumpTypes>()
@@ -104,11 +110,13 @@ namespace nxdRISC521_Assembler
     {
         public List<Operand> Operands { get; }
         public string Name { get; }
+        public int LineNumber { get; }
 
-        public ParsedInstruction(string name)
+        public ParsedInstruction(string name, int lineNumber)
         {
             Operands = new List<Operand>();
             Name = name;
+            LineNumber = lineNumber;
         }
     }
 }

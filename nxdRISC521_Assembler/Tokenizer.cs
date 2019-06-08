@@ -10,22 +10,24 @@ namespace nxdRISC521_Assembler
 {
     public enum TokenType
     {
-        SectionLabel = 0b00000001,
-        AsmDirective = 0b00000010,
-        Label = 0b00000100,
-        OpCode = 0b00001000,
-        RegName = 0b00010000,
-        Constant = 0b00100000,
-        ConstType = 0b01000000,
-        String = 0b10000000,
+        SectionLabel = 0b000000001,
+        AsmDirective = 0b000000010,
+        Label = 0b000000100,
+        OpCode = 0b000001000,
+        RegName = 0b000010000,
+        Constant = 0b000100000,
+        ConstType = 0b001000000,
+        String = 0b010000000,
+        Pragma = 0b100000000,
     }
 
     public class Token
     {
         public string Value { get; }
         public TokenType Type { get; }
+        public int LineNumber { get; }
 
-        public Token(string value, TokenType type)
+        public Token(string value, TokenType type, int lineNum)
         {
             Value = value;
             Type = type;
@@ -39,12 +41,12 @@ namespace nxdRISC521_Assembler
         /// </summary>
         /// <param name="line">The input line.</param>
         /// <returns>A list of tokens generated from the line.</returns>
-        public static List<Token> TokenizeLine(string line)
+        public static List<Token> TokenizeLine(string line, int lineNum)
         {
             string strippedLine = line.Trim(); // Strip of unneeded whitespace
             // Let's also remove any commas from the token, since they denote
             // a separation between operands and aren't needed
-            strippedLine = strippedLine.Replace(',', ' ').Trim();
+            strippedLine = strippedLine.Replace(',', ' ');
             List<Token> tokenList = new List<Token>();
 
             // Before splitting the line into tokens, strip out comments
@@ -108,12 +110,12 @@ namespace nxdRISC521_Assembler
                     int index = 0;
                     if(int.TryParse(indexStr, out index))
                     {
-                        tokenList.Add(new Token(tokenStrings[index], TokenType.String));
+                        tokenList.Add(new Token(tokenStrings[index], TokenType.String, lineNum));
                         continue;
                     }
                     else
                     {
-                        throw new TokenizerException("Token contains invalid character: '$'.", rawStripped);
+                        throw new TokenizerException("Token contains invalid character: '$'.", rawStripped, lineNum);
                     }
                 }
 
@@ -127,7 +129,7 @@ namespace nxdRISC521_Assembler
 
                 if(sectLabels.Contains(rawStripped.ToLower()))
                 {
-                    tokenList.Add(new Token(rawStripped.ToLower(), TokenType.SectionLabel));
+                    tokenList.Add(new Token(rawStripped.ToLower(), TokenType.SectionLabel, lineNum));
                     continue;
                 }
 
@@ -140,7 +142,7 @@ namespace nxdRISC521_Assembler
 
                 if(asmDirectives.Contains(rawStripped.ToLower()))
                 {
-                    tokenList.Add(new Token(rawStripped.ToLower(), TokenType.AsmDirective));
+                    tokenList.Add(new Token(rawStripped.ToLower(), TokenType.AsmDirective, lineNum));
                     continue;
                 }
 
@@ -172,11 +174,27 @@ namespace nxdRISC521_Assembler
                     "st", "cpy", "swap", "jmp",
                     "jc", "jn", "jv", "jz",
                     "jnc", "jnn", "jnv", "jnz",
+                    "andc", "orc", "call", "ret",
+                    "push", "pop",
                 };
 
                 if(opCodes.Contains(rawStripped.ToLower()))
                 {
-                    tokenList.Add(new Token(rawStripped.ToLower(), TokenType.OpCode));
+                    tokenList.Add(new Token(rawStripped.ToLower(), TokenType.OpCode, lineNum));
+                    continue;
+                }
+
+                // Check if the token is a pragma. For now, we only have the FOR pragma, but
+                // this will make it easier if other pragmas are added later
+                
+                List<string> pragmas = new List<string>()
+                {
+                    "for", "endfor"
+                };
+
+                if(pragmas.Contains(rawStripped.ToLower()))
+                {
+                    tokenList.Add(new Token(rawStripped.ToLower(), TokenType.Pragma, lineNum));
                     continue;
                 }
 
@@ -188,17 +206,17 @@ namespace nxdRISC521_Assembler
                 int outNum = 0;
                 if (int.TryParse(rawStripped, out outNum))
                 {
-                    if(outNum - 0x3FFF <= 0)
+                    if(outNum - 0xFFFF <= 0)
                     {
-                        tokenList.Add(new Token(outNum.ToString(), TokenType.Constant));
+                        tokenList.Add(new Token(outNum.ToString(), TokenType.Constant, lineNum));
                         continue;
                     }
                     else
                     {
                         // Constant is out of bounds - raise an error
                         throw new TokenizerException("Constant number is out of bounds. Constant "
-                            + "numbers are constrained to a 14-bit word and must be a value "
-                            + "between 0x0000 and 0x3FFF.", rawStripped);
+                            + "numbers are constrained to a 16-bit word and must be a value "
+                            + "between 0x0000 and 0xFFFF.", rawStripped, lineNum);
                     }
                 }
                 else if (rawStripped.Length > 2 && rawStripped.ToLower().Substring(0, 2) == "0x")
@@ -206,23 +224,23 @@ namespace nxdRISC521_Assembler
                     string hexString = rawStripped.ToLower().Substring(2);
                     if (int.TryParse(hexString, System.Globalization.NumberStyles.HexNumber, NumberFormatInfo.InvariantInfo, out outNum))
                     {
-                        if (outNum - 0x3FFF <= 0)
+                        if (outNum - 0xFFFF <= 0)
                         {
-                            tokenList.Add(new Token(outNum.ToString(), TokenType.Constant));
+                            tokenList.Add(new Token(outNum.ToString(), TokenType.Constant, lineNum));
                             continue;
                         }
                         else
                         {
                             // Constant is out of bounds - raise an error
                             throw new TokenizerException("Constant number is out of bounds. Constant "
-                                + "numbers are constrained to a 14-bit word and must be a value "
-                                + "between 0x0000 and 0x3FFF.", rawStripped);
+                                + "numbers are constrained to a 16-bit word and must be a value "
+                                + "between 0x0000 and 0xFFFF.", rawStripped, lineNum);
                         }
                     }
                     else
                     {
                         throw new TokenizerException("Invalid constant hex value. Hex values may only "
-                            + "contain digits of 0-9 and A-F.", rawStripped);
+                            + "contain digits of 0-9 and A-F.", rawStripped, lineNum);
                     }
                 }
 
@@ -232,7 +250,7 @@ namespace nxdRISC521_Assembler
                 // Check if token is a register reference
                 if(registerMatch.Success)
                 {
-                    tokenList.Add(new Token(registerMatch.Value.Substring(1), TokenType.RegName));
+                    tokenList.Add(new Token(registerMatch.Value.Substring(1), TokenType.RegName, lineNum));
                     continue;
                 }
 
@@ -241,7 +259,7 @@ namespace nxdRISC521_Assembler
                 Match labelMatch = labelRegex.Match(rawStripped);
                 if(labelMatch.Success)
                 {
-                    tokenList.Add(new Token(labelMatch.Value, TokenType.Label));
+                    tokenList.Add(new Token(labelMatch.Value, TokenType.Label, lineNum));
                     continue;
                 }
 
@@ -255,10 +273,12 @@ namespace nxdRISC521_Assembler
     public class TokenizerException : Exception
     {
         public string RawTokenValue { get; }
+        public int LineNumber { get; }
 
-        public TokenizerException(string message, string rawToken) : base(message)
+        public TokenizerException(string message, string rawToken, int line) : base(message)
         {
             RawTokenValue = rawToken;
+            LineNumber = line;
         }
     }
 }
