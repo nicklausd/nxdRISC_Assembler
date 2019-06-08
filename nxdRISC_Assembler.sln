@@ -1,9 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.28010.2016
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.28803.156
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "nxdRISC521_Assembler", "nxdRISC521_Assembler\nxdRISC521_Assembler.csproj", "{0C1AC8F3-07CA-4C53-B629-CEAA4A78071E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "nxdRISC_Assembler", "nxdRISC521_Assembler\nxdRISC_Assembler.csproj", "{0C1AC8F3-07CA-4C53-B629-CEAA4A78071E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

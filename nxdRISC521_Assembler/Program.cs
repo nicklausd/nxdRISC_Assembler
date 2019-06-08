@@ -6,7 +6,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace nxdRISC521_Assembler
+namespace nxdRISC_Assembler
 {
     class Program
     {
